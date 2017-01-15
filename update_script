@@ -1,0 +1,49 @@
+#!/bin/sh
+
+ADDON_NAME=lgtv
+CONFIG_DIR=/usr/local/etc/config
+ADDON_DIR=/usr/local/addons/${ADDON_NAME}
+RCD_DIR=${CONFIG_DIR}/rc.d
+WWW_DIR=${CONFIG_DIR}/addons/www/${ADDON_NAME}
+CONFIG_FILE="/etc/${ADDON_NAME}.conf"
+
+lcdtool "Installing...         "
+
+# mount /usr/local if not already mounted
+mount | grep /usr/local 2>&1 >/dev/null || mount /usr/local
+
+# create missing directories
+[ -e "${ADDON_DIR}" ] || (mkdir -p "${ADDON_DIR}"; chmod 755 "${ADDON_DIR}")
+[ -e "${RCD_DIR}" ] || (mkdir -p "${RCD_DIR}"; chmod 755 "${RCD_DIR}")
+
+# keep existing config
+[ -e "addon/${CONFIG_FILE}" -a -e "${ADDON_DIR}/${CONFIG_FILE}" ] && rm "addon/${CONFIG_FILE}"
+
+# install addon files
+[ -d addon ] && cp -af addon/* ${ADDON_DIR}/
+
+# install ccu dependent files
+if [ "$1" = "" ]; then
+	[ -d "ccu1" ] && cp -af ccu1/* "${ADDON_DIR}/"
+elif [ "$1" = "CCU2" ]; then
+	[ -d "ccu2" ] && cp -af ccu2/* "${ADDON_DIR}/"
+elif [ "$1" == "HM-RASPBERRYMATIC" ]; then
+	[ -d "ccurm" ] && cp -af ccurm/* "${ADDON_DIR}/"
+fi
+
+# copy www files
+if [ -d www ]; then
+	cp -af www "${ADDON_DIR}/"
+	if [ ! -e ${WWW_DIR} ]; then
+		ln -sf "${ADDON_DIR}/www" "${WWW_DIR}/${ADDON_NAME}"
+	fi
+fi
+
+# copy startup files
+[ -d "rc.d" ] && cp -af rc.d/* "${RCD_DIR}/"
+
+# add menu entry
+touch "{CONFIG_DIR}/hm_addons.cfg"
+"/usr/local/addons/cuxd/update_addon" ${ADDON_NAME} "${ADDON_DIR}/etc/${ADDON_NAME}-addon.cfg"
+
+sync
