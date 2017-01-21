@@ -33,12 +33,9 @@ elif [ "$1" == "HM-RASPBERRYMATIC" ]; then
 	[ -d "ccurm" ] && cp -af ccurm/* "${ADDON_DIR}/"
 fi
 
-# copy www files
-if [ -d www ]; then
-	cp -af www "${ADDON_DIR}/"
-	if [ ! -e "${CONFIG_DIR}/addons/www/${ADDON_NAME}" ]; then
-		ln -sf "${ADDON_DIR}/www" "${CONFIG_DIR}/addons/www/${ADDON_NAME}"
-	fi
+# link www files
+if [ -d "${ADDON_DIR}/www" -a ! -e "${CONFIG_DIR}/addons/www/${ADDON_NAME}" ]; then
+	ln -sf "${ADDON_DIR}/www" "${CONFIG_DIR}/addons/www/${ADDON_NAME}"
 fi
 
 # copy startup files
