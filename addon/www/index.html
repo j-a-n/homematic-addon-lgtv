@@ -1,0 +1,339 @@
+<!DOCTYPE HTML>
+<!--
+HomeMatic addon to control LG WebOS Smart TV
+
+Copyright (C) 2017  Jan Schneider <oss@janschneider.net>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<!--<link rel="stylesheet" type="text/css" href="style.css" />-->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.7/semantic.min.css" integrity="sha256-wT6CFc7EKRuf7uyVfi+MQNHUzojuHN2pSw0YWFt2K5E=" crossorigin="anonymous" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.7/semantic.min.js" integrity="sha256-flVaeawsBV96vCHiLmXn03IRJym7+ZfcLVvUWONCas8=" crossorigin="anonymous"></script>
+	<style>
+	</style>
+	
+	<title>LG-TV Addon</title>
+	<script>
+		var config = {};
+		var config_loaded = false;
+		var message_timer_id = null;
+		
+		$(document).ready(function() {
+			get_config();
+		});
+		
+		function display_message(type, text, millis) {
+			clear_message();
+			$('#message').text(text);
+			$('#message').attr('class', 'ui ' + type + ' message visible');
+			message_timer_id = setTimeout(clear_message, millis);
+		};
+		
+		function clear_message() {
+			if (message_timer_id != null) {
+				clearTimeout(message_timer_id);
+			}
+			message_timer_id = null;
+			$('#message').text('');
+			$('#message').attr('class', 'ui message hidden');
+		}
+		
+		function rest(method, path, data, success_callback) {
+			$.ajax({
+				url: "rest.cgi?" + path,
+				type: method,
+				data: data,
+				context: document.body,
+				success: success_callback,
+				error: function(xhr, ajaxOptions, thrownError) {
+					console.error(xhr);
+					err = thrownError;
+					try {
+						obj = JSON.parse(xhr.responseText);
+						if (obj.error != null) {
+							err = obj.error;
+						}
+					}
+					catch(e) {
+					}
+					display_message('error', 'An error occurred: ' + err, 60000);
+				}
+			});
+		};
+		
+		function update_view() {
+			$('#tvs tbody').empty();
+			config.tvs.forEach(function(tv) {
+				//console.log(tv);
+				var bedit = $('<button class="ui grey basic button">').attr('data-id', tv.id).text('edit');
+				bedit.click(function() {
+					edit_config_tv(this.getAttribute('data-id'));
+				});
+				var bdel = $('<button class="ui red basic button">').attr('data-id', tv.id).text('delete');
+				bdel.click(function() {
+					$("#confirm-delete").modal({
+						onApprove: function() {
+							delete_config_tv(this.getAttribute('data-id'));
+						}
+					}).modal('show').attr('data-id', tv.id);
+				});
+				var bon = $('<button class="ui olive basic button">').attr('data-id', tv.id).text('on');
+				bon.click(function() {
+					tv_command(this.getAttribute('data-id'), 'power_on');
+				});
+				var boff = $('<button class="ui orange basic button">').attr('data-id', tv.id).text('off');
+				boff.click(function() {
+					tv_command(this.getAttribute('data-id'), 'power_off');
+				});
+				$("#tvs tbody").append($('<tr>').append(
+					//$('<td>').text(tv.id),
+					$('<td>').text(tv.name ||''),
+					$('<td>').text(tv.ip ||''),
+					$('<td>').text(tv.mac ||''),
+					$('<td class="center aligned">').append(bedit, bdel, bon, boff)
+				));
+			});
+		}
+		
+		function get_tv_id() {
+			if (!config_loaded) {
+				display_message('error', 'Config not loaded', 5000);
+				return;
+			}
+			id = 1;
+			config.tvs.forEach(function(tv) {
+				var regex = /^tv_(\d+)$/g;
+				var match = regex.exec(tv.id);
+				if ((match != null) && (1 + parseInt(match[1]) > id)) {
+					id = 1 + parseInt(match[1]);
+				}
+			});
+			return 'tv_' + id;
+		}
+		
+		function auto_fill_mac_address() {
+			var ip_or_hostname = $('#form-edit-tv').form('get value', 'ip');
+			//var mac = $('#form-edit-tv').form('get value', 'mac');
+			if (ip_or_hostname) {
+				//console.log(ip_or_hostname);
+				rest("POST", "/lookup-mac-address", JSON.stringify(ip_or_hostname), function(data) {
+					console.log("got mac address " + data + " for address " + ip_or_hostname);
+					if (data) {
+						$('#form-edit-tv').form('set value', 'mac', data);
+						$('#form-edit-tv').form('is valid');
+					}
+				});
+			}
+		}
+		
+		function get_config() {
+			rest("GET", "/config", "", function(data) {
+				console.log("data: " + data);
+				config = data;
+				config_loaded = true;
+				update_view();
+			});
+		}
+		
+		function delete_config_tv(id) {
+			var tvs = [];
+			config.tvs.forEach(function(tv) {
+				if (tv.id == id) {
+					rest("DELETE", "/config/tv/" + tv.id, config, function(data) {
+						console.log(data);
+						get_config();
+						display_message('info', 'TV successfully deleted', 5000);
+					});
+				}
+				else {
+					tvs.push(tv);
+				}
+			});
+			config.tvs = tvs;
+			update_view();
+		}
+		
+		function update_config_tv() {
+			var tv = $('#form-edit-tv').form('get values');
+			var new_tv = false;
+			if (!tv.id) {
+				new_tv = true;
+				tv.id = get_tv_id();
+			}
+			console.log("update_config_tv()");
+			console.log(tv);
+			rest("PUT", "/config/tv/" + tv.id, JSON.stringify(tv), function(data) {
+				console.log(tv);
+				console.log(data);
+				get_config();
+				display_message('info', 'TV successfully updated', 5000);
+				tv_command(tv.id, "show_message", ["HomeMatic successfully connected."]);
+			});
+		}
+		
+		function edit_config_tv(id) {
+			config.tvs.forEach(function(tv) {
+				if (tv.id == id) {
+					$('#form-edit-tv').form('reset');
+					$('#form-edit-tv').form('set values', {
+						id: tv.id,
+						name: tv.name || '',
+						ip: tv.ip || '',
+						mac: tv.mac || '',
+						key: tv.key || ''
+					});
+					$('#modal-edit-tv').modal('show');
+				}
+			});
+		}
+		
+		function add_tv() {
+			$('#form-edit-tv').form('reset');
+			$('#modal-edit-tv').modal('show');
+		}
+		
+		function tv_command(tv_id, cmd, args) {
+			args = args || [];
+			rest("POST", "/command/" + tv_id, JSON.stringify({"command": cmd, "arguments": args}), function(data) {
+				display_message('info', 'Command successfully sent', 5000);
+			});
+		}
+		
+		$(document).ready(function() {
+			$('#form-edit-tv').form({
+				on: 'blur',
+				fields: {
+					id: {
+						identifier: 'id'
+					},
+					name: {
+						identifier: 'name',
+						rules: [{
+							type: 'regExp[/^[A-Za-z0-9-\. ]+$/]',
+							prompt: 'Please enter a valid name'
+						}]
+					},
+					ip: {
+						identifier: 'ip',
+						rules: [{
+							type: 'regExp[/^[a-z0-9-\.]+$/]',
+							prompt: 'Please enter a valid hostname or ip address'
+						}]
+					},
+					mac: {
+						identifier: 'mac',
+						rules: [{
+							type: 'regExp[/^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$/]',
+							prompt: 'Please enter a valid mac address'
+						}]
+					},
+					key: {
+						identifier: 'key'
+					}
+				},
+				onSuccess: function(event, fields) {
+					$('#modal-edit-tv').modal('hide');
+					update_config_tv();
+					event.preventDefault();
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<div style="padding-top: 5vw" class="ui container">
+		<h1 class="ui header">LG-TV Addon Configuration</h1>
+		<div id="message" class="ui message hidden">
+		</div>
+		<h2 class="ui dividing header">TVs</h2>
+		<table id="tvs" class="ui celled stackable table">
+			<thead>
+				<tr>
+					<!--<th>ID</th>-->
+					<th>Name</th>
+					<th>IP-Address</th>
+					<th>MAC-Address</th>
+					<th class="center aligned">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		<div onclick="add_tv();" class="ui blue basic button">
+		<i class="plus icon"></i>
+		Add TV
+		</div>
+	</div>
+	
+	<div id="modal-edit-tv" class="ui modal">
+		<i class="close icon"></i>
+		<div class="header">
+			TV
+		</div>
+		<div class="content">
+			<div class="ui warning message">
+				<p>Ensure that the TV is turned on and connected to your network.</p>
+			</div>
+			<form id="form-edit-tv" class="ui form">
+				<input name="id" type="hidden">
+				<div class="field">
+					<label>Name</label>
+					<input name="name" placeholder="Name" type="text">
+				</div>
+				<div class="field">
+					<label>IP-Address or Hostname</label>
+					<input name="ip" placeholder="IP-Address" type="text" onchange="auto_fill_mac_address();">
+				</div>
+				<div class="field">
+					<label>MAC-Address</label>
+					<input name="mac" placeholder="MAC-Address" type="text">
+				</div>
+				<!--
+				<div class="field">
+					<label>Client-Key</label>
+					<input name="key" placeholder="Client-Key" type="text">
+				</div>
+				-->
+				<div class="ui error message"></div>
+				<div class="ui button" onclick="$('#modal-edit-tv').modal('hide');">Cancel</div>
+				<div class="ui primary submit button">Submit</div>
+			</form>
+		</div>
+	</div>
+	
+	<div class="ui dimmer modals page transition">
+		<div id="confirm-delete" class="ui small basic modal transition">
+			<div class="content">
+				<p>Do you really want to delete this TV?</p>
+			</div>
+			<div class="actions">
+				<div class="ui red cancel inverted button">
+					<i class="remove icon"></i>
+					No
+				</div>
+				<div class="ui green ok inverted button">
+					<i class="checkmark icon"></i>
+					Yes
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

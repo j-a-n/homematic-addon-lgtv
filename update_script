@@ -4,23 +4,25 @@ ADDON_NAME=lgtv
 CONFIG_DIR=/usr/local/etc/config
 ADDON_DIR=/usr/local/addons/${ADDON_NAME}
 RCD_DIR=${CONFIG_DIR}/rc.d
-WWW_DIR=${CONFIG_DIR}/addons/www/${ADDON_NAME}
-CONFIG_FILE="/etc/${ADDON_NAME}.conf"
-
-lcdtool "Installing...         "
 
 # mount /usr/local if not already mounted
 mount | grep /usr/local 2>&1 >/dev/null || mount /usr/local
 
-# create missing directories
-[ -e "${ADDON_DIR}" ] || (mkdir -p "${ADDON_DIR}"; chmod 755 "${ADDON_DIR}")
-[ -e "${RCD_DIR}" ] || (mkdir -p "${RCD_DIR}"; chmod 755 "${RCD_DIR}")
+# backup existing config file
+[ -e "/tmp/${ADDON_NAME}.conf" ] && rm "/tmp/${ADDON_NAME}.conf"
+[ -e "${ADDON_DIR}/etc/${ADDON_NAME}.conf" ] && cp "${ADDON_DIR}/etc/${ADDON_NAME}.conf" "/tmp/${ADDON_NAME}.conf"
 
-# keep existing config
-[ -e "addon/${CONFIG_FILE}" -a -e "${ADDON_DIR}/${CONFIG_FILE}" ] && rm "addon/${CONFIG_FILE}"
+# create directories
+[ -e "${ADDON_DIR}" ] && rm -rf "${ADDON_DIR}"
+mkdir -p "${ADDON_DIR}"
+chmod 755 "${ADDON_DIR}"
+[ -e "${RCD_DIR}" ] || (mkdir -p "${RCD_DIR}"; chmod 755 "${RCD_DIR}")
 
 # install addon files
 [ -d addon ] && cp -af addon/* ${ADDON_DIR}/
+
+# restore config file
+[ -e "/tmp/${ADDON_NAME}.conf" ] && mv "/tmp/${ADDON_NAME}.conf" "${ADDON_DIR}/etc/${ADDON_NAME}.conf"
 
 # install ccu dependent files
 if [ "$1" = "" ]; then
@@ -34,8 +36,8 @@ fi
 # copy www files
 if [ -d www ]; then
 	cp -af www "${ADDON_DIR}/"
-	if [ ! -e ${WWW_DIR} ]; then
-		ln -sf "${ADDON_DIR}/www" "${WWW_DIR}/${ADDON_NAME}"
+	if [ ! -e "${CONFIG_DIR}/addons/www/${ADDON_NAME}" ]; then
+		ln -sf "${ADDON_DIR}/www" "${CONFIG_DIR}/addons/www/${ADDON_NAME}"
 	fi
 fi
 
