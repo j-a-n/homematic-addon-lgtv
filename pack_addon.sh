@@ -9,5 +9,5 @@ for f in update_script addon ccu1 ccu2 ccurm rc.d; do
 done
 chmod 755 "${tmp_dir}/update_script"
 
-(cd ${tmp_dir}; tar --owner=root --group=root -czvf "${addon_file}" .)
+(cd ${tmp_dir}; tar --owner=root --group=root --exclude ".*~" -czvf "${addon_file}" .)
 rm -rf "${tmp_dir}"
