@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 version=$(cat VERSION)
-addon_file="$(pwd)/hm-lgtv-${version}.tar.gz"
+addon_file="$(pwd)/hm-lgtv.tar.gz"
 tmp_dir=$(mktemp -d)
 
 for f in update_script addon ccu1 ccu2 ccurm rc.d; do

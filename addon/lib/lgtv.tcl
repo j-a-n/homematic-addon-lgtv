@@ -307,11 +307,9 @@ proc ::lgtv::connect {tv_id} {
 				\"appVersion\": \"1.1\",
 				\"manifestVersion\": \"1\",
 				\"signed\": \{
-					\"vendorId\": \"com.lge\",
+					\"vendorId\": \"homematic\",
 					\"localizedAppNames\": \{
-						\"\": \"LG Remote App\",
-						\"zxx-XX\": \"\\u041b\\u0413 R\\u044d\\u043cot\\u044d A\\u041f\\u041f\",
-						\"ko-KR\": \"\\ub9ac\\ubaa8\\ucee8 \\uc571\"
+						\"\": \"HomeMatic LG-TV Addon\"
 					\},
 					\"permissions\": \[
 						\"TEST_SECURE\",
@@ -334,14 +332,10 @@ proc ::lgtv::connect {tv_id} {
 					\"localizedVendorNames\": \{
 						\"\": \"LG Electronics\"
 					\},
-					\"appId\": \"com.lge.test\",
-					\"serial\": \"2f930e2d2cfe083771f68e4fe7bb07\",
-					\"created\": \"20140509\"
-				\},
-				\"signatures\": \[\{
-					\"signatureVersion\": 1,
-					\"signature\": \"eyJhbGdvcml0aG0iOiJSU0EtU0hBMjU2Iiwia2V5SWQiOiJ0ZXN0LXNpZ25pbmctY2VydCIsInNpZ25hdHVyZVZlcnNpb24iOjF9.hrVRgjCwXVvE2OOSpDZ58hR+59aFNwYDyjQgKk3auukd7pcegmE2CzPCa0bJ0ZsRAcKkCTJrWo5iDzNhMBWRyaMOv5zWSrthlf7G128qvIlpMT0YNY+n/FaOHE73uLrS/g7swl3/qH/BGFG2Hu4RlL48eb3lLKqTt2xKHdCs6Cd4RMfJPYnzgvI4BNrFUKsjkcu+WD4OO2A27Pq1n50cMchmcaXadJhGrOqH5YmHdOCj5NSHzJYrsW0HPlpuAx/ECMeIZYDh6RMqaFM2DXzdKX9NmmyqzJ3o/0lkk/N97gfVRLW5hA29yeAwaCViZNCP8iC9aO0q9fQojoa7NQnAtw==\"
-				\}\]
+					\"appId\": \"homematic.addon.lgtv\",
+					\"serial\": \"028e4d2cfe0fe7bb930e7183772ff6\",
+					\"created\": \"20170101\"
+				\}
 			\}
 		\}
 	\}"
