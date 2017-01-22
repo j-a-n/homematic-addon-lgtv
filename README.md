@@ -41,14 +41,14 @@ The `request` command can be use to send a raw request.
 You can find a (possibly uncomplete) list of possible requests in the [lgtv2 npm package documentation](https://www.npmjs.com/package/lgtv2).
 
 ### Examples
-Power on TV 1:
+Power on TV 1:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 power_on`
 
-Set volume to 20 on TV 2:
+Set volume to 20 on TV 2:  
 `/usr/local/addons/lgtv/lgtv.tcl 2 set_volume 20`
 
-Pause playback on TV 1 via request uri:
+Pause playback on TV 1 via request uri:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://media.controls/pause`
 
-Mute TV 1 via request uri:
+Mute TV 1 via request uri:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://audio/setMute '{"mute":true}'`
