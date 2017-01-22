@@ -86,7 +86,8 @@ proc ::lgtv::get_config_json {} {
 		set idx [string first "tv_" $section]
 		if {$idx == 0} {
 			set count [ expr { $count + 1} ]
-			append json "{\"id\":\"${section}\","
+			set tv_id [string range $section 3 end]
+			append json "{\"id\":\"${tv_id}\","
 			foreach key [ini::keys $ini $section] {
 				set value [::ini::value $ini $section $key]
 				set value [json_string $value]
@@ -106,17 +107,17 @@ proc ::lgtv::get_config_json {} {
 proc ::lgtv::create_tv {tv_id name ip mac} {
 	variable ini_file
 	set ini [ini::open $ini_file r+]
-	ini::set $ini $tv_id "name" $name
-	ini::set $ini $tv_id "ip" $ip
-	ini::set $ini $tv_id "mac" $mac
-	ini::set $ini $tv_id "port" 3000
+	ini::set $ini "tv_${tv_id}" "name" $name
+	ini::set $ini "tv_${tv_id}" "ip" $ip
+	ini::set $ini "tv_${tv_id}" "mac" $mac
+	ini::set $ini "tv_${tv_id}" "port" 3000
 	ini::commit $ini
 }
 
 proc ::lgtv::set_client_key {tv_id key} {
 	variable ini_file
 	set ini [ini::open $ini_file r+]
-	ini::set $ini $tv_id "key" $key
+	ini::set $ini "tv_${tv_id}" "key" $key
 	ini::commit $ini
 }
 
@@ -125,7 +126,7 @@ proc ::lgtv::get_tv {tv_id} {
 	set tv(id) ""
 	set ini [ini::open $ini_file r]
 	foreach section [ini::sections $ini] {
-		set idx [string first $tv_id $section]
+		set idx [string first "tv_${tv_id}" $section]
 		if {$idx == 0} {
 			set tv(id) $tv_id
 			foreach key [ini::keys $ini $section] {
@@ -143,7 +144,7 @@ proc ::lgtv::get_tv {tv_id} {
 proc ::lgtv::delete_tv {tv_id} {
 	variable ini_file
 	set ini [ini::open $ini_file r+]
-	ini::delete $ini $tv_id
+	ini::delete $ini "tv_${tv_id}"
 	ini::commit $ini
 }
 

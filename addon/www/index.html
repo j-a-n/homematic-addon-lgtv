@@ -119,13 +119,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			}
 			id = 1;
 			config.tvs.forEach(function(tv) {
-				var regex = /^tv_(\d+)$/g;
-				var match = regex.exec(tv.id);
-				if ((match != null) && (1 + parseInt(match[1]) > id)) {
-					id = 1 + parseInt(match[1]);
+				if (1 + parseInt(tv.id) > id) {
+					id = 1 + parseInt(tv.id);
 				}
 			});
-			return 'tv_' + id;
+			return id;
 		}
 		
 		function auto_fill_mac_address() {
