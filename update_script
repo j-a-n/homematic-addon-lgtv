@@ -4,27 +4,35 @@ ADDON_NAME=lgtv
 CONFIG_DIR=/usr/local/etc/config
 ADDON_DIR=/usr/local/addons/${ADDON_NAME}
 RCD_DIR=${CONFIG_DIR}/rc.d
+LOG_FILE=/usr/local/addons/${ADDON_NAME}-install.log
 
-# mount /usr/local if not already mounted
+exec 1<&-
+exec 2<&-
+exec 1<>$LOG_FILE
+exec 2>&1
+
+echo "starting installation of addon ${ADDON_NAME} at $(date)"
+
+echo "mount /usr/local if not already mounted"
 mount | grep /usr/local 2>&1 >/dev/null || mount /usr/local
 
-# backup existing config file
+echo "backup existing config file"
 [ -e "/tmp/${ADDON_NAME}.conf" ] && rm "/tmp/${ADDON_NAME}.conf"
 [ -e "${ADDON_DIR}/etc/${ADDON_NAME}.conf" ] && cp "${ADDON_DIR}/etc/${ADDON_NAME}.conf" "/tmp/${ADDON_NAME}.conf"
 
-# create directories
+echo "create directories"
 [ -e "${ADDON_DIR}" ] && rm -rf "${ADDON_DIR}"
 mkdir -p "${ADDON_DIR}"
 chmod 755 "${ADDON_DIR}"
 [ -e "${RCD_DIR}" ] || (mkdir -p "${RCD_DIR}"; chmod 755 "${RCD_DIR}")
 
-# install addon files
+echo "install addon files"
 [ -d addon ] && cp -af addon/* ${ADDON_DIR}/
 
-# restore config file
+echo "restore config file"
 [ -e "/tmp/${ADDON_NAME}.conf" ] && mv "/tmp/${ADDON_NAME}.conf" "${ADDON_DIR}/etc/${ADDON_NAME}.conf"
 
-# install ccu dependent files
+echo "install ccu dependent files"
 if [ "$1" = "" ]; then
 	[ -d "ccu1" ] && cp -af ccu1/* "${ADDON_DIR}/"
 elif [ "$1" = "CCU2" ]; then
@@ -33,16 +41,18 @@ elif [ "$1" == "HM-RASPBERRYMATIC" ]; then
 	[ -d "ccurm" ] && cp -af ccurm/* "${ADDON_DIR}/"
 fi
 
-# link www files
+echo "link www files"
 if [ -d "${ADDON_DIR}/www" -a ! -e "${CONFIG_DIR}/addons/www/${ADDON_NAME}" ]; then
 	ln -sf "${ADDON_DIR}/www" "${CONFIG_DIR}/addons/www/${ADDON_NAME}"
 fi
 
-# copy startup files
+echo "copy startup files"
 [ -d "rc.d" ] && cp -af rc.d/* "${RCD_DIR}/"
 
-# add menu entry
+echo "add menu entry"
 touch "{CONFIG_DIR}/hm_addons.cfg"
 "/usr/local/addons/cuxd/update_addon" ${ADDON_NAME} "${ADDON_DIR}/etc/${ADDON_NAME}-addon.cfg"
 
 sync
+
+exit 0
