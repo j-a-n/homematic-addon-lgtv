@@ -24,10 +24,10 @@
 
 command                 | description
 ------------------------| -----------------------------
-power_on                | power on tv
-power_off               | power off tv
-set_volume <level>      | set volume to LEVEL
-show_message <text>     | show message on screen
-get_apps                | get app list
-lauch_app <app_id>      | launch app
-request <uri> [payload] | send request
+`power_on`                | power on tv
+`power_off`               | power off tv
+`set_volume <level>`      | set volume to LEVEL
+`show_message <text>`     | show message on screen
+`get_apps`                | get app list
+`lauch_app <app_id>`      | launch app
+`request <uri> [payload]` | send request
