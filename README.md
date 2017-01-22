@@ -13,12 +13,13 @@
 * Configure new device in HomeMatic Web-UI
 * Configure a device channel for each TV and command you want to use
  * Select CMD_EXEC
- * Set CMD_SHORT to `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]`
- * The tv-id is an integer which is displayed on the LG-TV system control
- * Example to power on TV 1: `/usr/local/addons/lgtv/lgtv.tcl 1 power_on`
- 
+ * Set CMD_SHORT to `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]` (see usage for details)
+
 ## lgtv.tcl usage
 `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]`
+
+### tv-id
+The tv-id is an integer which is displayed on the LG-TV system control
 
 ### Commands
 
@@ -31,3 +32,19 @@ command                 | description
 `get_apps`                | get app list
 `lauch_app <app_id>`      | launch app
 `request <uri> [payload]` | send request
+
+The `request` command can be use to send a raw request.
+You can find a (possibly uncomplete) list of possible requests in the [lgtv2 npm package documentation](https://www.npmjs.com/package/lgtv2).
+
+### Examples
+Power on TV 1:
+`/usr/local/addons/lgtv/lgtv.tcl 1 power_on`
+
+Set volume to 20 on TV 2:
+`/usr/local/addons/lgtv/lgtv.tcl 2 set_volume 20`
+
+Pause playback on TV 1 via request uri:
+`/usr/local/addons/lgtv/lgtv.tcl 1 ssap://media.controls/pause`
+
+Mute TV 1 via request uri:
+`/usr/local/addons/lgtv/lgtv.tcl 1 ssap://audio/setMute '{"mute":true}'`
