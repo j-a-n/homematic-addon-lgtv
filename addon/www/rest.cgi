@@ -91,8 +91,8 @@ proc process {} {
 					lappend arglist [expr $a]
 				}
 			}
-			eval lgtv::tv_command $tv_id $command $arglist
-			return "\"Command successfully executed\""
+			set res [eval lgtv::tv_command [list $tv_id] [list $command] [lrange $arglist 0 end]]
+			return $res
 		} elseif {[lindex $path 1] == "config"} {
 			if {$plen == 1} {
 				if {$env(REQUEST_METHOD) == "GET"} {

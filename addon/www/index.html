@@ -214,6 +214,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			args = args || [];
 			rest("POST", "/command/" + tv_id, JSON.stringify({"command": cmd, "arguments": args}), function(data) {
 				display_message('info', 'Command successfully sent', 5000);
+				//display_message('info', data, 5000);
 			});
 		}
 		

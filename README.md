@@ -1,5 +1,9 @@
 # HomeMatic addon to control LG WebOS Smart TV
 
+## Prerequisites
+* This addon depends on CUxD
+* Power on is done by Wake On LAN, you will have to turn this feature on in your TVs settings (General => Mobile TV On => On)
+
 ## Installation / configuration
 
 * Download [addon package](https://github.com/j-a-n/homematic-addon-lgtv/raw/master/hm-lgtv.tar.gz)
@@ -44,7 +48,7 @@ Set volume to 20 on TV 2:
 `/usr/local/addons/lgtv/lgtv.tcl 2 set_volume 20`
 
 Pause playback on TV 1 via request uri:
-`/usr/local/addons/lgtv/lgtv.tcl 1 ssap://media.controls/pause`
+`/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://media.controls/pause`
 
 Mute TV 1 via request uri:
-`/usr/local/addons/lgtv/lgtv.tcl 1 ssap://audio/setMute '{"mute":true}'`
+`/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://audio/setMute '{"mute":true}'`

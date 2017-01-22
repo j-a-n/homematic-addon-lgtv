@@ -388,7 +388,7 @@ proc ::lgtv::power_on {tv_id} {
 		error "TV ${tv_id} mac address unknown"
 	}
 	exec $etherwake $tv(mac)
-	return "Wake On LAN magic packet sent to $tv(mac)"
+	return "\"Wake On LAN magic packet sent to $tv(mac)\""
 }
 
 proc ::lgtv::power_off {tv_id} {
@@ -414,16 +414,8 @@ proc ::lgtv::launch_app {tv_id, app_id} {
 
 proc ::lgtv::tv_command {tv_id command args} {
 	#error "${command} >${args}<" "Debug" 500
-	if {$args != ""} {
-		if {[llength $args] == 1} {
-			set result [$command $tv_id [lindex $args 0]]
-		} else {
-			eval {set result [$command $tv_id $args]}
-		}
-	} else {
-		eval {set result [$command $tv_id]}
-	}
-	return $result
+	set res [eval $command [list $tv_id] [lrange $args 0 end]]
+	return $res
 }
 
 
