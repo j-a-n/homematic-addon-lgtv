@@ -18,7 +18,7 @@
 source /usr/local/addons/lgtv/lib/ini.tcl
 
 namespace eval lgtv {
-	variable ini_file "../etc/lgtv.conf"
+	variable ini_file "/usr/local/addons/lgtv/etc/lgtv.conf"
 	variable log_file "/usr/local/addons/lgtv/log.txt"
 	variable etherwake "/usr/local/addons/cuxd/extra/ether-wake"
 }
@@ -393,6 +393,7 @@ proc ::lgtv::power_on {tv_id} {
 		error "TV ${tv_id} mac address unknown"
 	}
 	exec $etherwake $tv(mac)
+	return "Wake On LAN magic packet sent to $tv(mac)"
 }
 
 proc ::lgtv::power_off {tv_id} {
