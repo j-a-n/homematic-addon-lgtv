@@ -184,7 +184,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			config.tvs.forEach(function(tv) {
 				if (tv.id == id) {
 					var form = $('#form-edit-tv');
-					form.form('reset');
+					form.form('clear');
 					form.form('set values', {
 						id: tv.id,
 						name: tv.name || '',
@@ -202,7 +202,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		
 		function add_tv() {
 			var form = $('#form-edit-tv');
-			form.form('reset');
+			form.form('clear');
 			form.find("input[name='id']").parent().css('display', 'none');
 			form.find("input[name='mac']").parent().css('display', 'none');
 			form.find("input[name='key']").parent().css('display', 'none');
