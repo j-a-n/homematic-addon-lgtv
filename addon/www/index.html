@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<!--<link rel="stylesheet" type="text/css" href="style.css" />-->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.7/semantic.min.css" integrity="sha256-wT6CFc7EKRuf7uyVfi+MQNHUzojuHN2pSw0YWFt2K5E=" crossorigin="anonymous" />
@@ -158,7 +157,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					rest("DELETE", "/config/tv/" + tv.id, config, function(data) {
 						console.log(data);
 						get_config();
-						display_message('info', 'TV successfully deleted', 5000);
+						display_message('success', 'TV successfully deleted', 5000);
 					});
 				}
 				else {
@@ -176,7 +175,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				//console.log(tv);
 				//console.log(data);
 				get_config();
-				display_message('info', 'TV successfully updated', 5000);
+				display_message('success', 'TV successfully updated', 5000);
 				tv_command(tv.id, "show_message", ["HomeMatic successfully connected."]);
 			});
 		}
@@ -213,7 +212,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		function tv_command(tv_id, cmd, args) {
 			args = args || [];
 			rest("POST", "/command/" + tv_id, JSON.stringify({"command": cmd, "arguments": args}), function(data) {
-				display_message('info', 'Command successfully sent', 5000);
+				display_message('success', 'Command successfully sent', 5000);
 				//display_message('info', data, 5000);
 			});
 		}

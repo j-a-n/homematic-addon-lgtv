@@ -114,10 +114,10 @@ proc ::lgtv::create_tv {tv_id name ip mac} {
 	ini::commit $ini
 }
 
-proc ::lgtv::set_client_key {tv_id key} {
+proc ::lgtv::set_tv_param {tv_id param value} {
 	variable ini_file
 	set ini [ini::open $ini_file r+]
-	ini::set $ini "tv_${tv_id}" "key" $key
+	ini::set $ini "tv_${tv_id}" $param $value
 	ini::commit $ini
 }
 
@@ -346,7 +346,7 @@ proc ::lgtv::connect {tv_id} {
 		set response [receive_websocket_message $sock]
 		regexp {"client-key"\s*:\s*"([a-f0-9]+)"} $response match key
 		if {[info exists key]} {
-			set_client_key $tv_id $key
+			set_tv_param $tv_id "key" $key
 			return $sock
 		}
 	}
