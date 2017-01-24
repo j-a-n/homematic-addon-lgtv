@@ -143,7 +143,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		
 		function get_config() {
 			rest("GET", "/config", "", function(data) {
-				console.log("data: " + data);
 				config = data;
 				config_loaded = true;
 				update_view();
