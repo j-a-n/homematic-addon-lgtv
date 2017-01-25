@@ -69,7 +69,9 @@ proc process {} {
 		set path [split $query {/}]
 		set plen [expr [llength $path] - 1]
 		#error ">${query}< | >${path}< | >${plen}<" "Debug" 500
-		if {[lindex $path 1] == "lookup-mac-address"} {
+		if {[lindex $path 1] == "version"} {
+			return "\"[lgtv::version]\""
+		} elseif {[lindex $path 1] == "lookup-mac-address"} {
 			regexp {\"ip\"\s*:\s*\"([^\"]+)\"} $data match ip_or_host
 			set mac_address [lgtv::lookup_mac_address $ip_or_host]
 			return "\"${mac_address}\""

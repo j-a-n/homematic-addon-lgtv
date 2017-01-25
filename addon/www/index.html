@@ -265,6 +265,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		
 		$(document).ready(function() {
+			rest("GET", "/version", null, function(version) {
+				document.title = document.title + " " + version;
+			});
 			var form_config = {
 				on: 'blur',
 				fields: {

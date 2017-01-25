@@ -18,9 +18,18 @@
 source /usr/local/addons/lgtv/lib/ini.tcl
 
 namespace eval lgtv {
+	variable version_file "/usr/local/addons/lgtv/VERSION"
 	variable ini_file "/usr/local/addons/lgtv/etc/lgtv.conf"
 	variable log_file "/usr/local/addons/lgtv/log.txt"
 	variable etherwake "/usr/local/addons/cuxd/extra/ether-wake"
+}
+
+proc ::lgtv::version {} {
+	variable version_file
+	set fp [open $version_file r]
+	set data [read $fp]
+	close $fp
+	return [string trim $data]
 }
 
 proc ::lgtv::convert_string_to_hex {str} {
