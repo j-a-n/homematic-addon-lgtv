@@ -5,7 +5,6 @@
 * Power on is done by Wake On LAN, you will have to turn this feature on in your TVs settings (General => Mobile TV On => On)
 
 ## Installation / configuration
-
 * Download [addon package](https://github.com/j-a-n/homematic-addon-lgtv/raw/master/hm-lgtv.tar.gz)
 * Install addon package on ccu via system control
 * Open LG-TV addon configuration in system control and add your TVs
@@ -23,7 +22,7 @@
 `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]`
 
 ### tv-id
-The tv-id is an integer which is displayed on the LG-TV system control
+The tv-id is an integer which is displayed on the addon's system control
 
 ### Commands
 
