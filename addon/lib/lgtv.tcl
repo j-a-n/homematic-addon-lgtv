@@ -104,13 +104,14 @@ proc ::lgtv::get_config_json {} {
 	return $json
 }
 
-proc ::lgtv::create_tv {tv_id name ip mac} {
+proc ::lgtv::create_tv {tv_id name ip mac key} {
 	variable ini_file
 	set ini [ini::open $ini_file r+]
 	ini::set $ini "tv_${tv_id}" "name" $name
 	ini::set $ini "tv_${tv_id}" "ip" $ip
-	ini::set $ini "tv_${tv_id}" "mac" $mac
 	ini::set $ini "tv_${tv_id}" "port" 3000
+	ini::set $ini "tv_${tv_id}" "mac" $mac
+	ini::set $ini "tv_${tv_id}" "key" $key
 	ini::commit $ini
 }
 
@@ -242,21 +243,12 @@ proc ::lgtv::send_websocket_message {sock msg} {
 	flush $sock
 }
 
-proc ::lgtv::connect {tv_id} {
-	set atv [get_tv $tv_id]
-	array set tv $atv
-	if {$tv(id) == ""} {
-		error "TV ${tv_id} not configured"
-	}
-	if {$tv(ip) == ""} {
-		error "TV ${tv_id} ip address unknown"
-	}
-	#write_log 2 "connect to ${tv(ip)}:${tv(port)}"
+proc ::lgtv::connect {ip port {key ""}} {
 	
-	set sock [socket $tv(ip) $tv(port)]
+	set sock [socket $ip $port]
 	
 	puts $sock "GET / HTTP/1.1"
-	puts $sock "Host: ${tv(ip)}:${tv(port)}"
+	puts $sock "Host: ${ip}:${port}"
 	puts $sock "User-Agent: cuxd"
 	puts $sock "Upgrade: WebSocket"
 	puts $sock "Connection: Upgrade"
@@ -276,7 +268,7 @@ proc ::lgtv::connect {tv_id} {
 	set cmd "\{
 		\"type\": \"register\",
 		\"payload\": \{
-			\"client-key\": \"${tv(key)}\",
+			\"client-key\": \"${key}\",
 			\"pairingType\": \"PROMPT\",
 			\"forcePairing\": false,
 			\"manifest\": \{
@@ -344,10 +336,9 @@ proc ::lgtv::connect {tv_id} {
 	set response ""
 	for {set i 0} {$i <= 1} {incr i} {
 		set response [receive_websocket_message $sock]
-		regexp {"client-key"\s*:\s*"([a-f0-9]+)"} $response match key
-		if {[info exists key]} {
-			set_tv_param $tv_id "key" $key
-			return $sock
+		regexp {"client-key"\s*:\s*"([a-f0-9]+)"} $response match rkey
+		if {[info exists rkey]} {
+			return [list $sock $rkey]
 		}
 	}
 	close $sock
@@ -357,6 +348,30 @@ proc ::lgtv::connect {tv_id} {
 		error $wserr
 	}
 	error $response
+}
+
+proc ::lgtv::establish_link {ip port} {
+	set sock_key [connect $ip $port]
+	# return client-key
+	#error ">${sock_key}<" "Debug" 500
+	return [lindex $sock_key 1]
+}
+
+proc ::lgtv::connect_tv {tv_id} {
+	set atv [get_tv $tv_id]
+	array set tv $atv
+	if {$tv(id) == ""} {
+		error "TV ${tv_id} not configured"
+	}
+	if {$tv(ip) == ""} {
+		error "TV ${tv_id} ip address unknown"
+	}
+	if {$tv(key) == ""} {
+		error "TV ${tv_id} client-key unknown"
+	}
+	set sock_key [connect $tv(ip) $tv(port) ${tv(key)}]
+	# return socket
+	return [lindex $sock_key 0]
 }
 
 proc ::lgtv::disconnect {sock} {
@@ -370,7 +385,7 @@ proc ::lgtv::request {tv_id uri {payload ""}} {
 	}
 	append json "\}"
 	
-	set sock [connect $tv_id]
+	set sock [connect_tv $tv_id]
 	send_websocket_message $sock $json
 	set response [receive_websocket_message $sock]
 	close $sock

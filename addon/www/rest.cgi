@@ -70,13 +70,13 @@ proc process {} {
 		set plen [expr [llength $path] - 1]
 		#error ">${query}< | >${path}< | >${plen}<" "Debug" 500
 		if {[lindex $path 1] == "lookup-mac-address"} {
-			set ip_or_host [string range $data 1 end-1]
+			regexp {\"ip\"\s*:\s*\"([^\"]+)\"} $data match ip_or_host
 			set mac_address [lgtv::lookup_mac_address $ip_or_host]
 			return "\"${mac_address}\""
-		} elseif {[lindex $path 1] == "lookup-ip-address"} {
-			set ip_or_host [string range $data 1 end-1]
-			set ip_address [lgtv::lookup_ip_address $ip_or_host]
-			return "\"${ip_address}\""
+		} elseif {[lindex $path 1] == "establish-link"} {
+			regexp {\"ip\"\s*:\s*\"([^\"]+)\"} $data match ip_or_host
+			set key [lgtv::establish_link $ip_or_host 3000]
+			return "\"${key}\""
 		} elseif {[lindex $path 1] == "command"} {
 			set tv_id [lindex $path 2]
 			regexp {\"command\"\s*:\s*\"([^\"]+)\"} $data match command
@@ -106,7 +106,8 @@ proc process {} {
 						regexp {\"name\"\s*:\s*\"([^\"]+)\"} $data match name
 						regexp {\"ip\"\s*:\s*\"([^\"]+)\"} $data match ip
 						regexp {\"mac\"\s*:\s*\"([^\"]+)\"} $data match mac
-						lgtv::create_tv $id $name $ip $mac
+						regexp {\"key\"\s*:\s*\"([^\"]+)\"} $data match key
+						lgtv::create_tv $id $name $ip $mac $key
 						return "\"TV ${id} successfully created\""
 					} elseif {$env(REQUEST_METHOD) == "DELETE"} {
 						set id [lindex $path 3]

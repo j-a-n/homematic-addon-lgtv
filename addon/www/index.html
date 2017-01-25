@@ -33,15 +33,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		var config = {};
 		var config_loaded = false;
 		var message_timer_id = null;
+		var establish_link_timer_id = null;
 		
 		$(document).ready(function() {
 			get_config();
 		});
 		
-		function display_message(type, text, millis) {
+		function display_message(type, html, millis) {
 			clear_message();
-			$('#message').text(text);
+			$('#message').html(html);
 			$('#message').attr('class', 'ui ' + type + ' message visible');
+			$('#message-edit-tv').html(html);
+			$('#message-edit-tv').attr('class', 'ui ' + type + ' message visible');
 			message_timer_id = setTimeout(clear_message, millis);
 		};
 		
@@ -52,16 +55,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			message_timer_id = null;
 			$('#message').text('');
 			$('#message').attr('class', 'ui message hidden');
+			$('#message-edit-tv').html('');
+			$('#message-edit-tv').attr('class', 'ui message hidden');
 		}
 		
-		function rest(method, path, data, success_callback) {
-			$.ajax({
-				url: "rest.cgi?" + path,
-				type: method,
-				data: data,
-				context: document.body,
-				success: success_callback,
-				error: function(xhr, ajaxOptions, thrownError) {
+		function rest(method, path, data, success_callback, error_callback) {
+			if (!error_callback) {
+				error_callback = function(xhr, ajaxOptions, thrownError) {
 					console.error(xhr);
 					err = thrownError;
 					try {
@@ -74,6 +74,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					}
 					display_message('error', 'An error occurred: ' + err, 60000);
 				}
+			}
+			$.ajax({
+				url: "rest.cgi?" + path,
+				type: method,
+				data: data,
+				context: document.body,
+				success: success_callback,
+				error: error_callback
 			});
 		};
 		
@@ -125,14 +133,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			return id;
 		}
 		
-		function auto_fill_mac_address() {
+		function cancel_establish_link() {
+			if (establish_link_timer_id != null) {
+				clearTimeout(establish_link_timer_id);
+			}
+			establish_link_timer_id = null;
+		}
+		
+		function establish_link() {
 			var form = $('#form-edit-tv');
 			var ip_or_hostname = form.form('get value', 'ip');
-			form.addClass('loading');
 			if (ip_or_hostname) {
-				rest("POST", "/lookup-mac-address", JSON.stringify(ip_or_hostname), function(data) {
+				display_message('info', 'Connecting to TV, please accept incoming connection.', 60000);
+				rest("POST", "/establish-link", JSON.stringify({"ip": ip_or_hostname}),
+					function(data) {
+						console.log("link established: " + data);
+						display_message('success', 'Connection to TV established', 5000);
+						if (data) {
+							form.form('set value', 'key', data);
+							form.form('is valid');
+						}
+						$('#submit-edit-bridge').removeClass('disabled');
+					},
+					function(xhr, ajaxOptions, thrownError) {
+						if ($('#modal-edit-tv').modal('is active')) {
+							//console.error(xhr);
+							err = thrownError;
+							try {
+								obj = JSON.parse(xhr.responseText);
+								if (obj.error != null) {
+									err = obj.error;
+								}
+							}
+							catch(e) {
+							}
+							var msg = 'Failed to establish connection to TV.';
+							msg += '<ul>';
+							msg += '<li>Ensure that the TV is turned on and connected to your network.</li>';
+							msg += '<li>Test that the smartphone app can control the TV.</li>';
+							msg += '<li>Accept the incoming connection request on your TV.</li>';
+							msg += '</ul>';
+							display_message('error', msg, 15000);
+							establish_link_timer_id = setTimeout(establish_link, 5000);
+						}
+					}
+				);
+				rest("POST", "/lookup-mac-address", JSON.stringify({"ip": ip_or_hostname}), function(data) {
 					console.log("got mac address '" + data + "' for address '" + ip_or_hostname + "'");
-					form.removeClass('loading');
 					if (data) {
 						form.form('set value', 'mac', data);
 						form.form('is valid');
@@ -206,6 +253,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			form.find("input[name='mac']").parent().css('display', 'none');
 			form.find("input[name='key']").parent().css('display', 'none');
 			$('#modal-edit-tv').modal('show');
+			$('#submit-edit-bridge').addClass('disabled');
 		}
 		
 		function tv_command(tv_id, cmd, args) {
@@ -259,6 +307,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				}
 			};
 			$('#form-edit-tv').form(form_config);
+			$('#modal-edit-tv').modal({
+				onHide: function() {
+					cancel_establish_link();
+					clear_message();
+				}
+			});
 		});
 	</script>
 </head>
@@ -293,11 +347,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			TV
 		</div>
 		<div class="content">
-			<div class="ui warning message">
-				<ul>
-					<li>Ensure that the TV is turned on and connected to your network.</li>
-					<li>Accept the incoming connection request on your TV.</li>
-				</ul>
+			<div id="message-edit-tv" class="ui message hidden">
 			</div>
 			<form id="form-edit-tv" class="ui form">
 				<div class="disabled field">
@@ -306,7 +356,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				<div class="field">
 					<label>IP-Address or Hostname</label>
-					<input name="ip" placeholder="IP-Address" type="text" onchange='auto_fill_mac_address();'>
+					<input name="ip" placeholder="IP-Address" type="text" onchange='establish_link();'>
 				</div>
 				<div class="field">
 					<label>Name</label>
@@ -322,7 +372,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				<div class="ui error message"></div>
 				<div class="ui button" onclick="$('#modal-edit-tv').modal('hide');">Cancel</div>
-				<div class="ui primary submit button">Submit</div>
+				<div id="submit-edit-bridge" class="ui primary submit button">Submit</div>
 			</form>
 		</div>
 	</div>
