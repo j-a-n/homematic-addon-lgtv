@@ -180,7 +180,8 @@ proc ::lgtv::receive_websocket_message {sock} {
 	if { $len == 126 } {
 		binary scan [read $sock 2] S len
 	} elseif { $len == 127 } {
-		binary scan [read $sock 8] W len
+		# max 2^32
+		binary scan [read $sock 8] II len0 len
 	}
 	set msg [read $sock $len]
 	#write_log 3 "<<< $msg"
@@ -388,6 +389,7 @@ proc ::lgtv::disconnect {sock} {
 }
 
 proc ::lgtv::request {tv_id uri {payload ""}} {
+	#puts "$tv_id - $uri - $payload"
 	set json "\{\"type\": \"request\", \"id\": \"request_1\", \"uri\": \"${uri}\""
 	if {$payload != ""} {
 		append json ", \"payload\": ${payload}"
@@ -397,6 +399,7 @@ proc ::lgtv::request {tv_id uri {payload ""}} {
 	set sock [connect_tv $tv_id]
 	send_websocket_message $sock $json
 	set response [receive_websocket_message $sock]
+	#puts $response
 	close $sock
 	return $response
 }
@@ -421,6 +424,62 @@ proc ::lgtv::power_off {tv_id} {
 
 proc ::lgtv::set_volume {tv_id volume} {
 	return [request $tv_id "ssap://audio/setVolume" "\{\"volume\": $volume\}"]
+}
+
+proc ::lgtv::volume_up {tv_id} {
+	return [request $tv_id "ssap://audio/volumeUp"]
+}
+
+proc ::lgtv::volume_down {tv_id} {
+	return [request $tv_id "ssap://audio/volumeDown"]
+}
+
+proc ::lgtv::mute {tv_id} {
+	return [request $tv_id "ssap://audio/setMute" "\{\"mute\": true\}"]
+}
+
+proc ::lgtv::unmute {tv_id} {
+	return [request $tv_id "ssap://audio/setMute" "\{\"mute\": false\}"]
+}
+
+proc ::lgtv::get_channels {tv_id} {
+	return [request $tv_id "ssap://tv/getChannelList"]
+}
+
+proc ::lgtv::open_channel {tv_id channel_id} {
+	return [request $tv_id "ssap://tv/openChannel" "\{\"channelId\": \"$channel_id\"\}"]
+}
+
+proc ::lgtv::channel_up {tv_id} {
+	return [request $tv_id "ssap://tv/channelUp"]
+}
+
+proc ::lgtv::channel_down {tv_id} {
+	return [request $tv_id "ssap://tv/channelDown"]
+}
+
+proc ::lgtv::switch_input {tv_id input_id} {
+	return [request $tv_id "ssap://tv/switchInput" "\{\"inputId\": \"$input_id\"\}"]
+}
+
+proc ::lgtv::play {tv_id} {
+	return [request $tv_id "ssap://media.controls/play"]
+}
+
+proc ::lgtv::pause {tv_id} {
+	return [request $tv_id "ssap://media.controls/pause"]
+}
+
+proc ::lgtv::stop {tv_id} {
+	return [request $tv_id "ssap://media.controls/stop"]
+}
+
+proc ::lgtv::rewind {tv_id} {
+	return [request $tv_id "ssap://media.controls/rewind"]
+}
+
+proc ::lgtv::fast_forward {tv_id} {
+	return [request $tv_id "ssap://media.controls/fastForward"]
 }
 
 proc ::lgtv::show_message {tv_id msg} {
