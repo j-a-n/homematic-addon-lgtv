@@ -30,7 +30,7 @@ command                    | description
 ---------------------------| -----------------------------
 `power_on`                   | power on tv
 `power_off`                  | power off tv
-`set_volume <level>`         | set volume to LEVEL
+`set_volume <level>`         | set volume to level
 `volume_up`                  | turn up volume
 `volume_down`                | turn down volume
 `mute`                       | mute audio
@@ -39,7 +39,7 @@ command                    | description
 `open_channel <channel-id>`  | open channel by id
 `channel_up`                 | channel up
 `channel_down`               | channel down
-`switch_input <imput-id>`    | switch input
+`switch_input <input-id>`    | switch input
 `play`                       | play
 `pause`                      | pause
 `stop`                       | stop
@@ -57,9 +57,11 @@ You can find a (possibly uncomplete) list of possible requests in the [lgtv2 npm
 Power on TV 1:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 power_on`
 
+Turn up volume (+1) on TV 1:  
+`/usr/local/addons/lgtv/lgtv.tcl 1 volume_up`
+
 Set volume to 20 on TV 2:  
 `/usr/local/addons/lgtv/lgtv.tcl 2 set_volume 20`
-
 
 Open tv channel on TV 1:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 open_channel 7_23_1237_1237_1101_28107_1`
