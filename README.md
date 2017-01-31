@@ -69,6 +69,9 @@ Open tv channel on TV 1:
 Switch input to HDMI-1 on TV 1:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 switch_input HDMI_1`
 
+Show message on screen of TV 1:  
+`/usr/local/addons/lgtv/lgtv.tcl 1 show_message 'Hello world!'`
+
 Pause playback on TV 1 via request uri:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://media.controls/pause`
 
