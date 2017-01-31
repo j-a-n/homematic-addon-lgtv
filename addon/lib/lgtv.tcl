@@ -491,7 +491,7 @@ proc ::lgtv::get_apps {tv_id} {
 	return [request $tv_id "ssap://com.webos.applicationManager/listLaunchPoints"]
 }
 
-proc ::lgtv::launch_app {tv_id, app_id} {
+proc ::lgtv::launch_app {tv_id app_id} {
 	return [request $tv_id "ssap://system.launcher/launch" "\{\"id\": \"$app_id\"\}"]
 }
 

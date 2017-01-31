@@ -47,7 +47,7 @@ command                    | description
 `fast_forward`               | fast_forward
 `show_message <text>`        | show message on screen
 `get_apps`                   | get app list
-`lauch_app <app_id>`         | launch app
+`lauch_app <app-id>`         | launch app
 `request <uri> [payload]`    | send request
 
 The `request` command can be use to send a raw request.
@@ -71,6 +71,9 @@ Switch input to HDMI-1 on TV 1:
 
 Show message on screen of TV 1:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 show_message 'Hello world!'`
+
+Start Netflix-App on TV 1:  
+`/usr/local/addons/lgtv/lgtv.tcl 1 launch_app netflix`
 
 Pause playback on TV 1 via request uri:  
 `/usr/local/addons/lgtv/lgtv.tcl 1 request ssap://media.controls/pause`
