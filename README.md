@@ -48,7 +48,7 @@ command                    | description
 `fast_forward`               | fast_forward
 `show_message <text>`        | show message on screen
 `get_apps`                   | get app list
-`lauch_app <app-id>`         | launch app
+`launch_app <app-id>`        | launch app
 `request <uri> [payload]`    | send request
 
 The `request` command can be use to send a raw request.
