@@ -109,12 +109,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				boff.click(function() {
 					tv_command(this.getAttribute('data-id'), 'power_off');
 				});
+				var binfo = $('<button class="ui grey basic button">').attr('data-id', tv.id).text('info');
+				binfo.click(function() {
+					show_tv_info(this.getAttribute('data-id'));
+				});
 				$("#tvs tbody").append($('<tr>').append(
 					$('<td>').text(tv.id),
 					$('<td>').text(tv.name ||''),
 					$('<td>').text(tv.ip ||''),
 					$('<td>').text(tv.mac ||''),
-					$('<td class="center aligned">').append(bedit, bdel, bon, boff)
+					$('<td class="center aligned">').append(bedit, bdel, binfo, bon, boff)
 				));
 			});
 		}
@@ -143,7 +147,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		function establish_link() {
 			var form = $('#form-edit-tv');
 			var ip_or_hostname = form.form('get value', 'ip');
-			if (ip_or_hostname) {
+			var key = form.form('get value', 'key');
+			if (ip_or_hostname && !key) {
 				display_message('info', 'Connecting to TV, please accept incoming connection.', 60000);
 				rest("POST", "/establish-link", JSON.stringify({"ip": ip_or_hostname}),
 					function(data) {
@@ -256,12 +261,85 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			$('#submit-edit-bridge').addClass('disabled');
 		}
 		
-		function tv_command(tv_id, cmd, args) {
+		function tv_command(tv_id, cmd, args, success_callback) {
 			args = args || [];
-			rest("POST", "/command/" + tv_id, JSON.stringify({"command": cmd, "arguments": args}), function(data) {
-				display_message('success', 'Command successfully sent', 5000);
-				//display_message('info', data, 5000);
+			if (!success_callback) {
+				success_callback = function(data) {
+					display_message('success', 'Command successfully sent', 5000);
+					//display_message('info', data, 5000);
+				}
+			}
+			rest("POST", "/command/" + tv_id, JSON.stringify({"command": cmd, "arguments": args}), success_callback);
+		}
+		
+		function object_to_table( obj) {
+			var tbody = $('<tbody>');
+			var keys = [];
+			for (var key in obj) {
+				keys.push(key);
+			}
+			keys.sort(function(a, b) {
+				a = a.toLowerCase();
+				b = b.toLowerCase();
+				if (a < b) return -1;
+				if (a > b) return 1;
+				return 0;
 			});
+			for (var i=0; i < keys.length; i++) {
+				tbody.append($('<tr>').append(
+					$('<td>').text(keys[i]),
+					$('<td>').text((typeof obj[keys[i]] === 'object') ? JSON.stringify(obj[keys[i]]) : obj[keys[i]])
+				));
+			};
+			return $('<table class="ui celled stackable table">').append(
+				$('<thead>').append('<tr>').append(
+					$('<th>').text('Name'),
+					$('<th>').text('Value')
+				),
+				tbody
+			);
+		}
+		
+		function show_tv_info(tv_id) {
+			var error_callback = function(xhr, ajaxOptions, thrownError) {
+				console.error(xhr);
+				$('#dimmer-tv-info').removeClass('active');
+				$('#modal-tv-info').modal('hide');
+			}
+			$('#modal-tv-info').modal('show');
+			$('#dimmer-tv-info').addClass('active');
+			tv_command(tv_id, "request", ["ssap://tv/getChannelList"], function(resp1) {
+				tv_command(tv_id, "request", ["ssap://com.webos.applicationManager/listLaunchPoints"], function(resp2) {
+					tv_command(tv_id, "request", ["ssap://tv/getExternalInputList"], function(resp3) {
+						//console.log(resp1);
+						//console.log(resp2);
+						$('#dimmer-tv-info').removeClass('active');
+						$('#inputs tbody').empty();
+						$.each(resp3.payload.devices, function(input_num, input) {
+							$("#inputs tbody").append($('<tr>').append(
+								$('<td>').text(input.id),
+								$('<td>').text(input.label)
+							));
+						});
+						$('#apps tbody').empty();
+						$.each(resp2.payload.launchPoints, function(app_num, app) {
+							$("#apps tbody").append($('<tr>').append(
+								$('<td>').text(app.id),
+								$('<td>').text(app.title)
+							));
+						});
+						$('#channels tbody').empty();
+						$.each(resp1.payload.channelList, function(channel_num, channel) {
+							$("#channels tbody").append($('<tr>').append(
+								$('<td>').text(channel_num),
+								$('<td>').text(channel.channelId),
+								$('<td>').text(channel.channelName)
+							));
+						});
+						$('#modal-tv-info').modal('refresh');
+					}, error_callback);
+				}, error_callback);
+			}, error_callback);
 		}
 		
 		$(document).ready(function() {
@@ -359,7 +437,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				<div class="field">
 					<label>IP-Address or Hostname</label>
-					<input name="ip" placeholder="IP-Address" type="text" onchange='establish_link();'>
+					<input name="ip" placeholder="IP-Address" type="text" onblur='establish_link();'>
 				</div>
 				<div class="field">
 					<label>Name</label>
@@ -395,6 +473,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					Yes
 				</div>
 			</div>
+		</div>
+	</div>
+	
+	<div id="modal-tv-info" class="ui modal">
+		<i class="close icon"></i>
+		<div id="dimmer-tv-info" class="ui inverted dimmer">
+			<div class="ui text loader">Loading</div>
+		</div>
+		<div class="header">
+			Info
+		</div>
+		<div id="tv-info-content" class="content">
+			<div class="header">
+				Inputs
+			</div>
+			<table id="inputs" class="ui celled stackable table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Label</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+			<div class="header">
+				Apps
+			</div>
+			<table id="apps" class="ui celled stackable table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Title</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+			<div class="header">
+				Channels
+			</div>
+			<table id="channels" class="ui celled stackable table">
+				<thead>
+					<tr>
+						<th>Number</th>
+						<th>ID</th>
+						<th>Name</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
 		</div>
 	</div>
 </body>

@@ -39,6 +39,7 @@ command                    | description
 `open_channel <channel-id>`  | open channel by id
 `channel_up`                 | channel up
 `channel_down`               | channel down
+`get_inputs`                 | get external input list
 `switch_input <input-id>`    | switch input
 `play`                       | play
 `pause`                      | pause
