@@ -7,7 +7,7 @@
 ## Installation / configuration
 * Download [addon package](https://github.com/j-a-n/homematic-addon-lgtv/raw/master/hm-lgtv.tar.gz)
 * Install addon package on ccu via system control
-* Open LG-TV addon configuration in system control and add your TVs ( (http://<ccu-ip>/addons/lgtv/index.html))
+* Open LG-TV addon configuration in system control and add your TVs ( (http://ccu-ip/addons/lgtv/index.html))
 * Create new (40) 16-channel universal control device in CUxD
  * Serialnumber: choose a free one
  * Name: choose one, i.e: `LG-TV`

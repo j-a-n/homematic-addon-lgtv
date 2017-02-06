@@ -25,13 +25,14 @@ case "$1" in
 		logger -t homematic -p user.info "removing addon ${ADDON_NAME}"
 		"/usr/local/addons/cuxd/update_addon" ${ADDON_NAME} || true
 
-		[ -e "${ADDON_DIR}" ] && rm -rf "${ADDON_DIR}"
+		[ -e "${ADDON_DIR}" ] && rm -rf "${ADDON_DIR}/"
 		[ -L "${CONFIG_DIR}/addons/www/${ADDON_NAME}" ] && rm "${CONFIG_DIR}/addons/www/${ADDON_NAME}"
 		if [ -e "${RCD_DIR}/${ADDON_NAME}" ]; then
 			mount -o remount,rw /
 			rm -f ${RCD_DIR}/${ADDON_NAME}
 			mount -o remount,ro /
 		fi
+		[ -e "/usr/local/addons/${ADDON_NAME}-install.log" ] && rm -rf "/usr/local/addons/${ADDON_NAME}-install.log"
 	;;
 
 	*)
