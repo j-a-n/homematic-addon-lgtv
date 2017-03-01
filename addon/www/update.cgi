@@ -18,7 +18,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 set version_url "https://github.com/j-a-n/homematic-addon-lgtv/raw/master/VERSION"
-set package_url "https://github.com/j-a-n/homematic-addon-lgtv/raw/master/hm-hue.tar.gz"
+set package_url "https://github.com/j-a-n/homematic-addon-lgtv/raw/master/hm-lgtv.tar.gz"
 
 set cmd ""
 if {[info exists env(QUERY_STRING)]} {
