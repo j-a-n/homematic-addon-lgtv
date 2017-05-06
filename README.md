@@ -9,14 +9,14 @@
 * Install addon package on ccu via system control
 * Open LG-TV addon configuration in system control and add your TVs ( (http://ccu-ip/addons/lgtv/index.html))
 * Create new (40) 16-channel universal control device in CUxD
- * Serialnumber: choose a free one
- * Name: choose one, i.e: `LG-TV`
- * Device-Icon: whatever you want
- * Control: KEY
+  * Serialnumber: choose a free one
+  * Name: choose one, i.e: `LG-TV`
+  * Device-Icon: whatever you want
+  * Control: KEY
 * Configure new device in HomeMatic Web-UI
 * Configure a device channel for each TV and command you want to use
- * Select CMD_EXEC
- * Set CMD_SHORT to `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]` (see usage for details)
+  * Select CMD_EXEC
+  * Set CMD_SHORT to `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]` (see usage for details)
 
 ## lgtv.tcl usage
 `/usr/local/addons/lgtv/lgtv.tcl <tv-id> <command> [parameter]`
