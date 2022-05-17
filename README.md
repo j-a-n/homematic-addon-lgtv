@@ -1,5 +1,8 @@
 # HomeMatic addon to control LG WebOS Smart TV
 
+## DISCONTINUED
+This repository is DISCONTINUED.
+
 ## Prerequisites
 * This addon depends on CUxD
 * Power on is done by Wake On LAN, you will have to turn this feature on in your TVs settings (General => Mobile TV On => On)
